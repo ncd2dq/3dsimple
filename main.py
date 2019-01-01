@@ -136,13 +136,18 @@ def create_textures():
         'floor_far': '▁', 
         'ceiling_close': '#', 
         'ceiling_medium': 'x', 
-        'ceiling_far': '.', 
+        'ceiling_far': '.', \
+        'level0': '████████████',
+        'level1': '\#▓▓▓▓▓▓▓▓▓▓▃',
+        'level2': '\#x▒▒▒▒▒▒▒▒▒▂▃',
+        'level3': '\#x.░░░░░░░░▁▂▃',
+        'level4': '\#x..░░░░░░░▁▁▂▃'
     }
 
     return texture_byte_map
 
 
-def generate_player_vision(distances, texture_map, max_distance):
+def generate_player_vision(distances, texture_map, max_distance, screen_height_res, screen_height):
     '''
     @param distances:: Python array of floating point distances between rays and walls
 
@@ -152,12 +157,28 @@ def generate_player_vision(distances, texture_map, max_distance):
     Legal:
     a = b'xxxxx---...' + bytes('▓', 'utf-8')
     '''
-    to_transpose = 'h' + texture_map['light_shade'] + '\n' + 'i' + texture_map['light_shade'] + '\n'
+    to_transpose = ''
+
+    column_increment_heights = max_distance // 5
 
     # NEED TO GENERATE OUTPUT AND TRANSPOSE COLUMNS
-    for distance in distances:
-        pass
-
+    for row in range(screen_height_res):
+        new_row = ''
+        for distance in distances:
+            #print(distance // column_increment_heights)
+            print(column_increment_heights)
+            if distance // column_increment_heights == 0:
+                new_row += texture_map['level0'][row]
+            elif distance // column_increment_heights == 1:
+                new_row += texture_map['level1'][row]
+            elif distance // column_increment_heights == 2:
+                new_row += texture_map['level2'][row]
+            elif distance // column_increment_heights == 3:
+                new_row += texture_map['level3'][row]
+            elif distance // column_increment_heights == 4:
+                new_row += texture_map['level4'][row]
+        new_row += '\n'
+        to_transpose += new_row
 
     transposed = ''.join([''.join(i) for i in zip(*to_transpose.split())])
     transposed = bytes(transposed, 'utf-8')
@@ -228,14 +249,19 @@ def main(env_array, env_string, texture_map, wall='#'):
                         )
 
             # Increment the rays length until a collision
+            ray_distance = 0
             while True:
                 ray_index_x = int(ray_x // screen_width_resolution)
                 ray_index_y = int(ray_y // screen_height_resolution)
-                ray_distance = 0
-
                 # If we hit a wall, determine distance we traveled
+
+                if ray_index_x >= env_index_width:
+                    ray_index_x = env_index_width - 1
+                if ray_index_y >= env_index_height:
+                    ray_index_y = env_index_height - 1
+
                 if ray_distance >= ray_max_dist:
-                    distances.append(ray_distance)
+                    distances.append(ray_max_dist)
                     break
                 elif env_array[ray_index_y][ray_index_x] == wall:
                     distances.append(ray_distance)
@@ -251,10 +277,13 @@ def main(env_array, env_string, texture_map, wall='#'):
         #
         # Now we have an array of distances (@array distances) for each array
         # each distance in the array represents a column
-        player_vision = generate_player_vision(distances, texture_map, ray_max_dist)
+        player_vision = generate_player_vision(distances, texture_map, ray_max_dist, screen_height_resolution, screen_height)
         last_key = new_key
+        os.system('cls')
         sys.stdout.buffer.write(player_vision)
         sys.stdout.flush()
+        print(playerX, playerY)
+        time.sleep(0.2)
 
 
 if __name__ == '__main__':
@@ -267,4 +296,9 @@ if __name__ == '__main__':
     #     sys.stdout.buffer.write(vart)
     #     sys.stdout.flush() # Flush forces the buffer to screen
     #     time.sleep(1)
+
+# to_transpose = 'himynameisjohn\nhimynameismary'
+
+# transposed = ''.join([''.join(i) for i in zip(*to_transpose.split('\n'))])
+# print(transposed)
     input('Press <Enter> to quit')
