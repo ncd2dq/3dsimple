@@ -4,6 +4,7 @@ import os
 import time
 import sys
 import math
+from transpose import transposer
 
 
 def get_keys():
@@ -12,7 +13,6 @@ def get_keys():
     '''
     if msvcrt.kbhit():
         key = msvcrt.getch()
-
         if key == b'H':
             return 'UP'
         elif key == b'M':
@@ -36,7 +36,7 @@ def test_performance(env):
     a_chars = env
     np_chars = np.array(env)
 
-    str_total = 0 
+    str_total = 0
     a_total = 0
     np_total = 0
 
@@ -90,21 +90,21 @@ def create_env():
             '#..........#',
             '#..........#',
             '#..........#',
-            '#..#########',
+            '#...########',
             '##.......###',
-            '##..###...##',
-            '#..####..###',
-            '#.##.##....#',
-            '#.##.##..###',
-            '#....##....#',
-            '#######..#.#',
-            '##...##.##.#',
+            '##..##....##',
+            '######...###',
+            '######.....#',
+            '######...###',
+            '#..........#',
+            '###..###..##',
+            '##...#######',
             '##.........#',
-            '##.......###',
+            '##.........#',
             '############',
     ]
 
-    env_string = ''.join(env_array)
+    env_string = '\n'.join(env_array)
 
     return env_array, env_string
 
@@ -130,18 +130,25 @@ def create_textures():
         'light_shade': '░',
         'medium_shade': '▒',
         'dark_shade': '▓',
-        'full_shade': '█', 
-        'floor_close': '▃', 
-        'floor_medium': '▂', 
-        'floor_far': '▁', 
-        'ceiling_close': '#', 
-        'ceiling_medium': 'x', 
+        'full_shade': '█',
+        'floor_close': '▃',
+        'floor_medium': '▂',
+        'floor_far': '▁',
+        'ceiling_close': '#',
+        'ceiling_medium': 'x',
         'ceiling_far': '.', \
-        'level0': '████████████',
-        'level1': '\#▓▓▓▓▓▓▓▓▓▓▃',
-        'level2': '\#x▒▒▒▒▒▒▒▒▒▂▃',
-        'level3': '\#x.░░░░░░░░▁▂▃',
-        'level4': '\#x..░░░░░░░▁▁▂▃'
+        'level0': '██████████████████████████████',
+        'level1': '#████████████████████████████=',
+        'level2': '##x▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓===',
+        'level3': '##xx▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓====',
+        'level4': '##xx.▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒_====',
+        'level5': '##xx..▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒__====',
+        'level6': '##xx...▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒___====',
+        'level7': '##xx....░░░░░░░░░░░░░░____====',
+        'level8': '##xx.....░░░░░░░░░░░░-____====',
+        'level9': '##xx......░░░░░░░░░░--____====',
+        'level10': '##xx......░░░░░░░░░---____====',
+        'level11': '##xx.......░░░░░░░░---____====',
     }
 
     return texture_byte_map
@@ -159,34 +166,60 @@ def generate_player_vision(distances, texture_map, max_distance, screen_height_r
     '''
     to_transpose = ''
 
-    column_increment_heights = max_distance // 5
+    column_increment_heights = 2
+
+    #{2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24}
 
     # NEED TO GENERATE OUTPUT AND TRANSPOSE COLUMNS
-    for row in range(screen_height_res):
-        new_row = ''
-        for distance in distances:
-            #print(distance // column_increment_heights)
-            print(column_increment_heights)
-            if distance // column_increment_heights == 0:
-                new_row += texture_map['level0'][row]
-            elif distance // column_increment_heights == 1:
-                new_row += texture_map['level1'][row]
-            elif distance // column_increment_heights == 2:
-                new_row += texture_map['level2'][row]
-            elif distance // column_increment_heights == 3:
-                new_row += texture_map['level3'][row]
-            elif distance // column_increment_heights == 4:
-                new_row += texture_map['level4'][row]
-        new_row += '\n'
-        to_transpose += new_row
+    for distance in distances:
+        if distance // column_increment_heights == 0:
+            to_transpose += texture_map['level0']
+        elif distance // column_increment_heights == 1:
+            to_transpose += texture_map['level1']
+        elif distance // column_increment_heights == 2:
+            to_transpose += texture_map['level2']
+        elif distance // column_increment_heights == 3:
+            to_transpose += texture_map['level3']
+        elif distance // column_increment_heights == 4:
+            to_transpose += texture_map['level4']
+        elif distance // column_increment_heights == 5:
+            to_transpose += texture_map['level5']
+        elif distance // column_increment_heights == 6:
+            to_transpose += texture_map['level6']
+        elif distance // column_increment_heights == 7:
+            to_transpose += texture_map['level7']
+        elif distance // column_increment_heights == 8:
+            to_transpose += texture_map['level8']
+        elif distance // column_increment_heights == 9:
+            to_transpose += texture_map['level9']
+        elif distance // column_increment_heights == 10:
+            to_transpose += texture_map['level10']
+        elif distance // column_increment_heights == 11:
+            to_transpose += texture_map['level11']
+        to_transpose += '\n'
 
-    transposed = ''.join([''.join(i) for i in zip(*to_transpose.split())])
+    # for row in range(screen_height_res):
+    #     new_row = ''
+    #     for distance in distances:
+    #         if distance // column_increment_heights == 0:
+    #             new_row += texture_map['level0'][row]
+    #         elif distance // column_increment_heights == 1:
+    #             new_row += texture_map['level1'][row]
+    #         elif distance // column_increment_heights == 2:
+    #             new_row += texture_map['level2'][row]
+    #         elif distance // column_increment_heights == 3:
+    #             new_row += texture_map['level3'][row]
+    #         elif distance // column_increment_heights == 4:
+    #             new_row += texture_map['level4'][row]
+    #     new_row += '\n'
+    #     to_transpose += new_row
+
+    transposed = transposer(to_transpose)
     transposed = bytes(transposed, 'utf-8')
     return transposed
 
 
 def main(env_array, env_string, texture_map, wall='#'):
-    env_string = bytes(env_string, 'utf-8')
     last_key = None
 
     # If resolution is 12, each 3D column will be 12 units long
@@ -204,8 +237,10 @@ def main(env_array, env_string, texture_map, wall='#'):
     playerMoveSpeed = 2
     playerTurnSpeed = 5
     playerAngle = 0
+    current_arrow = '>'
 
     while last_key != 'QUIT':
+        map_env_array = env_array.copy()
         new_key = get_keys()
 
         #
@@ -217,7 +252,7 @@ def main(env_array, env_string, texture_map, wall='#'):
             angle_radians = math.radians(playerAngle)
             increment_x = math.cos(angle_radians) * playerMoveSpeed
             increment_y = math.sin(angle_radians) * playerMoveSpeed
-            if new_key == 'UP':   
+            if new_key == 'UP':
                 playerX += increment_x
                 playerY += increment_y
             else:
@@ -225,9 +260,34 @@ def main(env_array, env_string, texture_map, wall='#'):
                 playerY -= increment_y
         # Rotate characters visual field
         if new_key == 'LEFT':
-            playerAngle += playerTurnSpeed
-        elif new_key == 'RIGHT':
             playerAngle -= playerTurnSpeed
+        elif new_key == 'RIGHT':
+            playerAngle += playerTurnSpeed
+
+        if playerAngle > 0:
+            arrow_angle = playerAngle % 360
+        else:
+            arrow_angle = playerAngle * -1
+            arrow_angle = playerAngle % 360
+            arrow_angle *= -1
+
+        if arrow_angle < -45 and arrow_angle > -135:
+            current_arrow = '^'
+        elif arrow_angle < -135 and arrow_angle > -225:
+            current_arrow = '<'
+        elif arrow_angle < -225 and arrow_angle > -315:
+            current_arrow = 'v'
+        elif arrow_angle < -315:
+            current_arrow = '>'
+
+        elif arrow_angle > -45 and arrow_angle < 45:
+            current_arrow = '>'
+        elif arrow_angle > 45 and arrow_angle < 135:
+            current_arrow = 'v'
+        elif arrow_angle > 135 and arrow_angle < 225:
+            current_arrow = '<'
+        elif arrow_angle > 225:
+            current_arrow = '^'
 
         #
         # RAY TRACING
@@ -279,18 +339,51 @@ def main(env_array, env_string, texture_map, wall='#'):
         # each distance in the array represents a column
         player_vision = generate_player_vision(distances, texture_map, ray_max_dist, screen_height_resolution, screen_height)
         last_key = new_key
-        os.system('cls')
+        try:
+            # Widnows
+            os.system('cls')
+        except Exception as e:
+            # Mac
+            os.system('clear')
+
+        # Display player on map
+        player_cord_x = int(playerX // screen_width_resolution)
+        player_cord_y = int(playerY // screen_height_resolution)
+        map_env_array[player_cord_y] = (map_env_array[player_cord_y][:player_cord_x] +
+        'P' +
+        map_env_array[player_cord_y][player_cord_x + 1:])
+
+        # place directional arrow
+        if current_arrow == '>':
+            map_env_array[player_cord_y] = (map_env_array[player_cord_y][:player_cord_x+1] +
+            current_arrow +
+            map_env_array[player_cord_y][player_cord_x + 2:])
+        elif current_arrow == '<':
+            map_env_array[player_cord_y] = (map_env_array[player_cord_y][:player_cord_x-1] +
+            current_arrow +
+            map_env_array[player_cord_y][player_cord_x:])
+        elif current_arrow == '^':
+            map_env_array[player_cord_y-1] = (map_env_array[player_cord_y-1][:player_cord_x] +
+            current_arrow +
+            map_env_array[player_cord_y-1][player_cord_x + 1:])
+        elif current_arrow == 'v':
+            map_env_array[player_cord_y+1] = (map_env_array[player_cord_y+1][:player_cord_x] +
+            current_arrow +
+            map_env_array[player_cord_y+1][player_cord_x + 1:])
+
+
+        map_byte = '\n'.join(map_env_array)
+        map_byte = bytes(map_byte, 'utf-8')
+        player_vision += map_byte
         sys.stdout.buffer.write(player_vision)
         sys.stdout.flush()
-        print(playerX, playerY)
-        time.sleep(0.2)
-
+        print(arrow_angle)
 
 if __name__ == '__main__':
     env_array, env_string = create_env()
     texture_map = create_textures()
     main(env_array, env_string, texture_map)
-    
+
     # for i in range(5):
     #     vart = bytes(str(i), 'utf-8')
     #     sys.stdout.buffer.write(vart)
