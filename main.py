@@ -139,16 +139,16 @@ def create_textures():
         'ceiling_far': '.', \
         'level0': '██████████████████████████████',
         'level1': '#████████████████████████████=',
-        'level2': '##x▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓===',
-        'level3': '##xx▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓====',
-        'level4': '##xx.▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒_====',
-        'level5': '##xx..▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒__====',
-        'level6': '##xx...▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒___====',
-        'level7': '##xx....░░░░░░░░░░░░░░____====',
-        'level8': '##xx.....░░░░░░░░░░░░-____====',
-        'level9': '##xx......░░░░░░░░░░--____====',
-        'level10': '##xx......░░░░░░░░░---____====',
-        'level11': '##xx.......░░░░░░░░---____====',
+        'level2': '##-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓===',
+        'level3': '##--▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓====',
+        'level4': '##--.▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒_====',
+        'level5': '##--..▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒__====',
+        'level6': '##--...▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒___====',
+        'level7': '##--....░░░░░░░░░░░░░░____====',
+        'level8': '##--.....░░░░░░░░░░░░-____====',
+        'level9': '##--......░░░░░░░░░░--____====',
+        'level10': '##--......░░░░░░░░░---____====',
+        'level11': '##--.......░░░░░░░░---____====',
     }
 
     return texture_byte_map
@@ -295,7 +295,7 @@ def main(env_array, env_string, texture_map, wall='#'):
         # Determine distances to objects in player field
         # each distance until ray touched an object will determine 1 full column drawn
         distances = []
-        ray_count = 120
+        ray_count = 140
         ray_angle_incrementation = player_visual_field_breadth / ray_count
         ray_distance_incrementation = 2
         ray_max_dist = screen_width
@@ -375,9 +375,9 @@ def main(env_array, env_string, texture_map, wall='#'):
         map_byte = '\n'.join(map_env_array)
         map_byte = bytes(map_byte, 'utf-8')
         player_vision += map_byte
+        player_vision += bytes(str(arrow_angle), 'utf-8')
         sys.stdout.buffer.write(player_vision)
         sys.stdout.flush()
-        print(arrow_angle)
 
 if __name__ == '__main__':
     env_array, env_string = create_env()
