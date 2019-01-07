@@ -28,7 +28,7 @@ def get_keys():
         else:
             return False
     return False
-    
+
 
 def create_env():
     '''
@@ -119,9 +119,6 @@ def generate_player_vision(distances, texture_map, max_distance, screen_height_r
 
     column_increment_heights = 2
 
-    #{2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24}
-
-    # NEED TO GENERATE OUTPUT AND TRANSPOSE COLUMNS
     for distance in distances:
         if distance // column_increment_heights == 0:
             to_transpose += texture_map['level0']
@@ -149,24 +146,9 @@ def generate_player_vision(distances, texture_map, max_distance, screen_height_r
             to_transpose += texture_map['level11']
         to_transpose += '\n'
 
-    # for row in range(screen_height_res):
-    #     new_row = ''
-    #     for distance in distances:
-    #         if distance // column_increment_heights == 0:
-    #             new_row += texture_map['level0'][row]
-    #         elif distance // column_increment_heights == 1:
-    #             new_row += texture_map['level1'][row]
-    #         elif distance // column_increment_heights == 2:
-    #             new_row += texture_map['level2'][row]
-    #         elif distance // column_increment_heights == 3:
-    #             new_row += texture_map['level3'][row]
-    #         elif distance // column_increment_heights == 4:
-    #             new_row += texture_map['level4'][row]
-    #     new_row += '\n'
-    #     to_transpose += new_row
-
     transposed = transposer(to_transpose)
     transposed = bytes(transposed, 'utf-8')
+    
     return transposed
 
 
