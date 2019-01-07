@@ -5,6 +5,8 @@ import time
 import sys
 import math
 from transpose import transposer
+from player import Player
+from minimap import MiniMap
 
 
 def get_keys():
@@ -231,63 +233,12 @@ def main(env_array, env_string, texture_map, wall='#'):
     screen_height = env_index_height * screen_height_resolution
 
     # Player Attributes (Angles in Degrees)
-    player_visual_field_breadth = 90
-    playerX = 24.0
-    playerY = 12.0
-    playerMoveSpeed = 2
-    playerTurnSpeed = 5
-    playerAngle = 0
-    current_arrow = '>'
+    player = Player(24.0, 12.0, 0)
+    map = MiniMap(env_array)
 
     while last_key != 'QUIT':
-        map_env_array = env_array.copy()
         new_key = get_keys()
-
-        #
-        # PLAYER MOVEMENT
-        #
-        # Move player in direction they are facing
-        if new_key == 'UP' or new_key == 'DOWN':
-            # Determine amount of x / y component in direction player is facing
-            angle_radians = math.radians(playerAngle)
-            increment_x = math.cos(angle_radians) * playerMoveSpeed
-            increment_y = math.sin(angle_radians) * playerMoveSpeed
-            if new_key == 'UP':
-                playerX += increment_x
-                playerY += increment_y
-            else:
-                playerX -= increment_x
-                playerY -= increment_y
-        # Rotate characters visual field
-        if new_key == 'LEFT':
-            playerAngle -= playerTurnSpeed
-        elif new_key == 'RIGHT':
-            playerAngle += playerTurnSpeed
-
-        if playerAngle > 0:
-            arrow_angle = playerAngle % 360
-        else:
-            arrow_angle = playerAngle * -1
-            arrow_angle = playerAngle % 360
-            arrow_angle *= -1
-
-        if arrow_angle < -45 and arrow_angle > -135:
-            current_arrow = '^'
-        elif arrow_angle < -135 and arrow_angle > -225:
-            current_arrow = '<'
-        elif arrow_angle < -225 and arrow_angle > -315:
-            current_arrow = 'v'
-        elif arrow_angle < -315:
-            current_arrow = '>'
-
-        elif arrow_angle > -45 and arrow_angle < 45:
-            current_arrow = '>'
-        elif arrow_angle > 45 and arrow_angle < 135:
-            current_arrow = 'v'
-        elif arrow_angle > 135 and arrow_angle < 225:
-            current_arrow = '<'
-        elif arrow_angle > 225:
-            current_arrow = '^'
+        player.key_input(new_key)
 
         #
         # RAY TRACING
@@ -296,15 +247,15 @@ def main(env_array, env_string, texture_map, wall='#'):
         # each distance until ray touched an object will determine 1 full column drawn
         distances = []
         ray_count = 140
-        ray_angle_incrementation = player_visual_field_breadth / ray_count
+        ray_angle_incrementation = player.visual_field_degrees / ray_count
         ray_distance_incrementation = 2
         ray_max_dist = screen_width
         for ray_num in range(ray_count):
-            ray_x = playerX
-            ray_y = playerY
+            ray_x = player.x
+            ray_y = player.y
             ray_angle = (
-                            playerAngle
-                            - (player_visual_field_breadth / 2)
+                            player.angle
+                            - (player.visual_field_degrees / 2)
                             + (ray_angle_incrementation * ray_num)
                         )
 
@@ -347,35 +298,12 @@ def main(env_array, env_string, texture_map, wall='#'):
             os.system('clear')
 
         # Display player on map
-        player_cord_x = int(playerX // screen_width_resolution)
-        player_cord_y = int(playerY // screen_height_resolution)
-        map_env_array[player_cord_y] = (map_env_array[player_cord_y][:player_cord_x] +
-        'P' +
-        map_env_array[player_cord_y][player_cord_x + 1:])
+        player_cord_x, player_cord_y = player.get_index(screen_width_resolution, screen_height_resolution)
+        map_bytes = map.get_minimap(player_cord_x, player_cord_y, player.angle)
 
-        # place directional arrow
-        if current_arrow == '>':
-            map_env_array[player_cord_y] = (map_env_array[player_cord_y][:player_cord_x+1] +
-            current_arrow +
-            map_env_array[player_cord_y][player_cord_x + 2:])
-        elif current_arrow == '<':
-            map_env_array[player_cord_y] = (map_env_array[player_cord_y][:player_cord_x-1] +
-            current_arrow +
-            map_env_array[player_cord_y][player_cord_x:])
-        elif current_arrow == '^':
-            map_env_array[player_cord_y-1] = (map_env_array[player_cord_y-1][:player_cord_x] +
-            current_arrow +
-            map_env_array[player_cord_y-1][player_cord_x + 1:])
-        elif current_arrow == 'v':
-            map_env_array[player_cord_y+1] = (map_env_array[player_cord_y+1][:player_cord_x] +
-            current_arrow +
-            map_env_array[player_cord_y+1][player_cord_x + 1:])
+        player_vision += map_bytes
+        player_vision += bytes(str(map.arrow_angle), 'utf-8')
 
-
-        map_byte = '\n'.join(map_env_array)
-        map_byte = bytes(map_byte, 'utf-8')
-        player_vision += map_byte
-        player_vision += bytes(str(arrow_angle), 'utf-8')
         sys.stdout.buffer.write(player_vision)
         sys.stdout.flush()
 
@@ -383,15 +311,4 @@ if __name__ == '__main__':
     env_array, env_string = create_env()
     texture_map = create_textures()
     main(env_array, env_string, texture_map)
-
-    # for i in range(5):
-    #     vart = bytes(str(i), 'utf-8')
-    #     sys.stdout.buffer.write(vart)
-    #     sys.stdout.flush() # Flush forces the buffer to screen
-    #     time.sleep(1)
-
-# to_transpose = 'himynameisjohn\nhimynameismary'
-
-# transposed = ''.join([''.join(i) for i in zip(*to_transpose.split('\n'))])
-# print(transposed)
     input('Press <Enter> to quit')

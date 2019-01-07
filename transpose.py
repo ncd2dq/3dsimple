@@ -3,7 +3,9 @@ def transposer(string: str, delim: str='\n'):
     @param string: The string to be transposed
     @param delim: The character that separates each set
 
-    Assumes that each set is of equal length
+    Takes a screen represented by a string of characters, each column of
+    the screen separated by @param delim and transposes it. Each separated set must be the
+    same length.
     '''
     words = string.split(delim)
     words = [word for word in words if len(word) > 1]
